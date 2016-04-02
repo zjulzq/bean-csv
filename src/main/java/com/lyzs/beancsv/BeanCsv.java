@@ -26,11 +26,21 @@ import au.com.bytecode.opencsv.CSVWriter;
 public class BeanCsv {
 	private static final Logger log = LoggerFactory.getLogger(BeanCsv.class);
 
+	/**
+	 * Write a header line to the csvWriter.  The header line is parsed from clazz according to the CsvColumn's name. The column order is decided by CsvColumn's orderKey, in literal order.
+	 * @param csvWriter
+	 * @param clazz
+	 */
 	public static <T> void writeHeader(CSVWriter csvWriter, Class<T> clazz) {
 		String[] header = pickCsvHeader(clazz);
 		csvWriter.writeNext(header);
 	}
 
+	/**
+	 * Pick the header line from clazz according to the CsvColumn's name. The column order is decided by CsvColumn's orderKey, in literal order.
+	 * @param clazz
+	 * @return
+	 */
 	public static <T> String[] pickCsvHeader(Class<T> clazz) {
 		List<String> header = new ArrayList<>();
 		if (clazz == null) {
@@ -61,12 +71,22 @@ public class BeanCsv {
 		return header.toArray(new String[header.size()]);
 	}
 
+	/**
+	 * Write a bean object to csvWriter.
+	 * @param csvWriter
+	 * @param bean
+	 */
 	public static <T> void write(CSVWriter csvWriter, T bean) {
 		List<T> list = new ArrayList<>();
 		list.add(bean);
 		write(csvWriter, list);
 	}
 
+	/**
+	 * Write a list of bean objects to csvWriter.
+	 * @param csvWriter
+	 * @param beans
+	 */
 	public static <T> void write(CSVWriter csvWriter, List<T> beans) {
 		if (beans == null || beans.isEmpty()) {
 			return;
@@ -104,6 +124,13 @@ public class BeanCsv {
 		csvWriter.writeAll(list);
 	}
 
+	/**
+	 * Parse bean objects from csvReader, according to clazz.
+	 * @param csvReader
+	 * @param clazz
+	 * @param excludeHeader Whether to skip the header line. If true, the first line will be skipped; otherwise, not skipped.
+	 * @return List<T>
+	 */
 	public static <T> List<T> parseBeans(CSVReader csvReader, Class<T> clazz, boolean excludeHeader) {
 		List<T> list = new ArrayList<>();
 		try {
