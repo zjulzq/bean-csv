@@ -84,7 +84,7 @@ public class BeanCsv {
 			for (Entry<String, Field> entry : map.entrySet()) {
 				Field field = entry.getValue();
 				try {
-					String value = field.get(bean).toString();
+					String value = String.valueOf(field.get(bean));
 					tmp.add(value);
 				} catch (IllegalArgumentException | IllegalAccessException e) {
 					log.warn("", e);
