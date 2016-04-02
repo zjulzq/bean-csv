@@ -13,4 +13,6 @@ public @interface CsvColumn {
 	public String name() default "fieldName";
 
 	public String orderKey() default "fieldName";
+
+	public String format() default "";
 }

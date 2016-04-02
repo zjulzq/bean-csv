@@ -3,8 +3,12 @@ package com.lyzs.beancsv;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -70,6 +74,7 @@ public class BeanCsv {
 		Class<?> clazz = beans.get(0).getClass();
 		List<Field> fields = pickFields(clazz);
 		Map<String, Field> map = pickOrderKey2Field(fields);
+		Map<String, String> orderKey2Format = pickOrderKey2Format(fields);
 
 		List<String[]> list = new ArrayList<>();
 		for (Object bean : beans) {
@@ -77,7 +82,17 @@ public class BeanCsv {
 			for (Entry<String, Field> entry : map.entrySet()) {
 				Field field = entry.getValue();
 				try {
-					String value = String.valueOf(field.get(bean));
+					Object object = field.get(bean);
+					String value = "";
+					if (object != null) {
+						if (field.getType() == Date.class) {
+							String format = orderKey2Format.get(entry.getKey());
+							SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
+							value = simpleDateFormat.format((Date) object);
+						} else {
+							value = String.valueOf(field.get(bean));
+						}
+					}
 					tmp.add(value);
 				} catch (IllegalArgumentException | IllegalAccessException e) {
 					log.warn("", e);
@@ -94,6 +109,7 @@ public class BeanCsv {
 		try {
 			List<Field> fields = pickFields(clazz);
 			Map<String, Field> map = pickOrderKey2Field(fields);
+			Map<String, String> orderKey2Format = pickOrderKey2Format(fields);
 			List<String[]> lines = csvReader.readAll();
 			if (excludeHeader && !lines.isEmpty()) {
 				lines.remove(0);
@@ -106,8 +122,15 @@ public class BeanCsv {
 					String value = line[index];
 					index++;
 					try {
-						BeanUtils.setProperty(t, field.getName(), value);
-					} catch (InvocationTargetException e) {
+						if (field.getType() == Date.class) {
+							String format = orderKey2Format.get(entry.getKey());
+							SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
+							Date date = simpleDateFormat.parse(value);
+							BeanUtils.setProperty(t, field.getName(), date);
+						} else {
+							BeanUtils.setProperty(t, field.getName(), value);
+						}
+					} catch (InvocationTargetException | ParseException e) {
 						log.warn("", e);
 					}
 				}
@@ -133,6 +156,25 @@ public class BeanCsv {
 					throw new RuntimeException("not support duplicated orderKey");
 				}
 				map.put(orderKey, field);
+			}
+		}
+		return map;
+	}
+
+	private static Map<String, String> pickOrderKey2Format(List<Field> fields) {
+		Map<String, String> map = new HashMap<>();
+		for (Field field : fields) {
+			if (field.isAnnotationPresent(CsvColumn.class)) {
+				CsvColumn csvColumn = field.getAnnotation(CsvColumn.class);
+				String orderKey = csvColumn.orderKey();
+				if (orderKey.equals("fieldName")) {
+					orderKey = field.getName();
+				}
+				String format = csvColumn.format();
+				if (map.containsKey(orderKey)) {
+					throw new RuntimeException("not support duplicated orderKey");
+				}
+				map.put(orderKey, format);
 			}
 		}
 		return map;
