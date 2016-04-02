@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -31,7 +32,7 @@ public class BeanCsv {
 		if (clazz == null) {
 			return header.toArray(new String[header.size()]);
 		}
-		Field[] fields = clazz.getDeclaredFields();
+		List<Field> fields = pickFields(clazz);
 		Map<String, String> map = new TreeMap<>();
 		for (Field field : fields) {
 			if (field.isAnnotationPresent(CsvColumn.class)) {
@@ -64,7 +65,7 @@ public class BeanCsv {
 			return;
 		}
 		Class<?> clazz = beans.get(0).getClass();
-		Field[] fields = clazz.getDeclaredFields();
+		List<Field> fields = pickFields(clazz);
 		Map<String, Field> map = new TreeMap<>();
 		for (Field field : fields) {
 			if (field.isAnnotationPresent(CsvColumn.class)) {
@@ -99,7 +100,7 @@ public class BeanCsv {
 	public static <T> List<T> parseBeans(CSVReader csvReader, Class<T> clazz, boolean excludeHeader) {
 		List<T> list = new ArrayList<>();
 		try {
-			Field[] fields = clazz.getDeclaredFields();
+			List<Field> fields = pickFields(clazz);
 			Map<String, Field> map = new TreeMap<>();
 			for (Field field : fields) {
 				if (field.isAnnotationPresent(CsvColumn.class)) {
@@ -135,5 +136,16 @@ public class BeanCsv {
 			log.warn("", e);
 		}
 		return list;
+	}
+
+	private static List<Field> pickFields(Class<?> clazz) {
+		List<Field> fields = new ArrayList<>();
+		fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
+		Class<?> parent = clazz.getSuperclass();
+		while (parent != Object.class) {
+			fields.addAll(Arrays.asList(parent.getDeclaredFields()));
+			parent = parent.getSuperclass();
+		}
+		return fields;
 	}
 }
