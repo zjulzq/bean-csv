@@ -17,12 +17,12 @@ import au.com.bytecode.opencsv.CSVWriter;
 public class BeanCsv {
 	private static final Logger log = LoggerFactory.getLogger(BeanCsv.class);
 
-	public static void writeHeader(CSVWriter csvWriter, Class<?> clazz) {
+	public static <T> void writeHeader(CSVWriter csvWriter, Class<T> clazz) {
 		String[] header = pickCsvHeader(clazz);
 		csvWriter.writeNext(header);
 	}
 
-	public static String[] pickCsvHeader(Class<?> clazz) {
+	public static <T> String[] pickCsvHeader(Class<T> clazz) {
 		List<String> header = new ArrayList<>();
 		if (clazz == null) {
 			return header.toArray(new String[header.size()]);
@@ -49,13 +49,13 @@ public class BeanCsv {
 		return header.toArray(new String[header.size()]);
 	}
 
-	public static void write(CSVWriter csvWriter, Object bean) {
-		List<Object> list = new ArrayList<>();
+	public static <T> void write(CSVWriter csvWriter, T bean) {
+		List<T> list = new ArrayList<>();
 		list.add(bean);
 		write(csvWriter, list);
 	}
 
-	public static void write(CSVWriter csvWriter, List<Object> beans) {
+	public static <T> void write(CSVWriter csvWriter, List<T> beans) {
 		if (beans == null || beans.isEmpty()) {
 			return;
 		}
