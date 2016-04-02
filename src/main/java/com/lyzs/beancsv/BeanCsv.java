@@ -45,6 +45,9 @@ public class BeanCsv {
 				if (name.equals("fieldName")) {
 					name = field.getName();
 				}
+				if (map.containsKey(orderKey)) {
+					throw new RuntimeException("not support duplicated orderKey");
+				}
 				map.put(orderKey, name);
 			}
 		}
@@ -75,6 +78,9 @@ public class BeanCsv {
 					orderKey = field.getName();
 				}
 				field.setAccessible(true);
+				if (map.containsKey(orderKey)) {
+					throw new RuntimeException("not support duplicated orderKey");
+				}
 				map.put(orderKey, field);
 			}
 		}
@@ -110,6 +116,9 @@ public class BeanCsv {
 						orderKey = field.getName();
 					}
 					field.setAccessible(true);
+					if (map.containsKey(orderKey)) {
+						throw new RuntimeException("not support duplicated orderKey");
+					}
 					map.put(orderKey, field);
 				}
 			}
