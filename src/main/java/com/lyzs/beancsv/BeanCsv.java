@@ -17,6 +17,11 @@ import au.com.bytecode.opencsv.CSVWriter;
 public class BeanCsv {
 	private static final Logger log = LoggerFactory.getLogger(BeanCsv.class);
 
+	public static void writeHeader(CSVWriter csvWriter, Class<?> clazz) {
+		String[] header = pickCsvHeader(clazz);
+		csvWriter.writeNext(header);
+	}
+
 	public static String[] pickCsvHeader(Class<?> clazz) {
 		List<String> header = new ArrayList<>();
 		if (clazz == null) {
