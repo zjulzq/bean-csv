@@ -1,17 +1,22 @@
 package com.lyzs.beancsv;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.lyzs.annotation.CsvColumn;
 
+import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
 public class BeanCsv {
@@ -90,5 +95,44 @@ public class BeanCsv {
 		}
 
 		csvWriter.writeAll(list);
+	}
+
+	// must exclude the header line
+	public static <T> List<T> parseBeans(CSVReader csvReader, Class<T> clazz) {
+		List<T> list = new ArrayList<>();
+		try {
+			Field[] fields = clazz.getDeclaredFields();
+			Map<String, Field> map = new TreeMap<>();
+			for (Field field : fields) {
+				if (field.isAnnotationPresent(CsvColumn.class)) {
+					CsvColumn csvColumn = field.getAnnotation(CsvColumn.class);
+					String orderKey = csvColumn.orderKey();
+					if (orderKey.equals("fieldName")) {
+						orderKey = field.getName();
+					}
+					field.setAccessible(true);
+					map.put(orderKey, field);
+				}
+			}
+			List<String[]> lines = csvReader.readAll();
+			for (String[] line : lines) {
+				T t = clazz.newInstance();
+				int index = 0;
+				for (Entry<String, Field> entry : map.entrySet()) {
+					Field field = entry.getValue();
+					String value = line[index];
+					index++;
+					try {
+						BeanUtils.setProperty(t, field.getName(), value);
+					} catch (InvocationTargetException e) {
+						log.warn("", e);
+					}
+				}
+				list.add(t);
+			}
+		} catch (IOException | InstantiationException | IllegalAccessException e) {
+			log.warn("", e);
+		}
+		return list;
 	}
 }
