@@ -27,7 +27,10 @@ public class BeanCsv {
 	private static final Logger log = LoggerFactory.getLogger(BeanCsv.class);
 
 	/**
-	 * Write a header line to the csvWriter.  The header line is parsed from clazz according to the CsvColumn's name. The column order is decided by CsvColumn's orderKey, in literal order.
+	 * Write a header line to the csvWriter. The header line is parsed from
+	 * clazz according to the CsvColumn's name. The column order is decided by
+	 * CsvColumn's orderKey, in literal order.
+	 * 
 	 * @param csvWriter
 	 * @param clazz
 	 */
@@ -37,7 +40,9 @@ public class BeanCsv {
 	}
 
 	/**
-	 * Pick the header line from clazz according to the CsvColumn's name. The column order is decided by CsvColumn's orderKey, in literal order.
+	 * Pick the header line from clazz according to the CsvColumn's name. The
+	 * column order is decided by CsvColumn's orderKey, in literal order.
+	 * 
 	 * @param clazz
 	 * @return
 	 */
@@ -73,6 +78,7 @@ public class BeanCsv {
 
 	/**
 	 * Write a bean object to csvWriter.
+	 * 
 	 * @param csvWriter
 	 * @param bean
 	 */
@@ -84,6 +90,7 @@ public class BeanCsv {
 
 	/**
 	 * Write a list of bean objects to csvWriter.
+	 * 
 	 * @param csvWriter
 	 * @param beans
 	 */
@@ -93,13 +100,13 @@ public class BeanCsv {
 		}
 		Class<?> clazz = beans.get(0).getClass();
 		List<Field> fields = pickFields(clazz);
-		Map<String, Field> map = pickOrderKey2Field(fields);
+		Map<String, Field> orderKey2Field = pickOrderKey2Field(fields);
 		Map<String, String> orderKey2Format = pickOrderKey2Format(fields);
 
 		List<String[]> list = new ArrayList<>();
 		for (Object bean : beans) {
 			List<String> tmp = new ArrayList<>();
-			for (Entry<String, Field> entry : map.entrySet()) {
+			for (Entry<String, Field> entry : orderKey2Field.entrySet()) {
 				Field field = entry.getValue();
 				try {
 					Object object = field.get(bean);
@@ -126,16 +133,19 @@ public class BeanCsv {
 
 	/**
 	 * Parse bean objects from csvReader, according to clazz.
+	 * 
 	 * @param csvReader
 	 * @param clazz
-	 * @param excludeHeader Whether to skip the header line. If true, the first line will be skipped; otherwise, not skipped.
+	 * @param excludeHeader
+	 *            Whether to skip the header line. If true, the first line will
+	 *            be skipped; otherwise, not skipped.
 	 * @return List<T>
 	 */
 	public static <T> List<T> parseBeans(CSVReader csvReader, Class<T> clazz, boolean excludeHeader) {
 		List<T> list = new ArrayList<>();
 		try {
 			List<Field> fields = pickFields(clazz);
-			Map<String, Field> map = pickOrderKey2Field(fields);
+			Map<String, Field> orderKey2Field = pickOrderKey2Field(fields);
 			Map<String, String> orderKey2Format = pickOrderKey2Format(fields);
 			List<String[]> lines = csvReader.readAll();
 			if (excludeHeader && !lines.isEmpty()) {
@@ -144,7 +154,7 @@ public class BeanCsv {
 			for (String[] line : lines) {
 				T t = clazz.newInstance();
 				int index = 0;
-				for (Entry<String, Field> entry : map.entrySet()) {
+				for (Entry<String, Field> entry : orderKey2Field.entrySet()) {
 					Field field = entry.getValue();
 					String value = line[index];
 					index++;
