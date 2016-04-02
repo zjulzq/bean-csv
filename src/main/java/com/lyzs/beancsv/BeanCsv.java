@@ -97,8 +97,7 @@ public class BeanCsv {
 		csvWriter.writeAll(list);
 	}
 
-	// must exclude the header line
-	public static <T> List<T> parseBeans(CSVReader csvReader, Class<T> clazz) {
+	public static <T> List<T> parseBeans(CSVReader csvReader, Class<T> clazz, boolean excludeHeader) {
 		List<T> list = new ArrayList<>();
 		try {
 			Field[] fields = clazz.getDeclaredFields();
@@ -115,6 +114,9 @@ public class BeanCsv {
 				}
 			}
 			List<String[]> lines = csvReader.readAll();
+			if (excludeHeader && !lines.isEmpty()) {
+				lines.remove(0);
+			}
 			for (String[] line : lines) {
 				T t = clazz.newInstance();
 				int index = 0;
