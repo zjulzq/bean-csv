@@ -10,9 +10,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Documented
 public @interface CsvColumn {
-	public String name() default "fieldName";
+    public String name() default "fieldName";
 
-	public String orderKey() default "fieldName";
+    public String orderKey() default "fieldName";
 
-	public String format() default "";
+    public String format() default "";
 }
