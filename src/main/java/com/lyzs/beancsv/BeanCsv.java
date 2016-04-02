@@ -69,21 +69,7 @@ public class BeanCsv {
 		}
 		Class<?> clazz = beans.get(0).getClass();
 		List<Field> fields = pickFields(clazz);
-		Map<String, Field> map = new TreeMap<>();
-		for (Field field : fields) {
-			if (field.isAnnotationPresent(CsvColumn.class)) {
-				CsvColumn csvColumn = field.getAnnotation(CsvColumn.class);
-				String orderKey = csvColumn.orderKey();
-				if (orderKey.equals("fieldName")) {
-					orderKey = field.getName();
-				}
-				field.setAccessible(true);
-				if (map.containsKey(orderKey)) {
-					throw new RuntimeException("not support duplicated orderKey");
-				}
-				map.put(orderKey, field);
-			}
-		}
+		Map<String, Field> map = pickOrderKey2Field(fields);
 
 		List<String[]> list = new ArrayList<>();
 		for (Object bean : beans) {
@@ -107,21 +93,7 @@ public class BeanCsv {
 		List<T> list = new ArrayList<>();
 		try {
 			List<Field> fields = pickFields(clazz);
-			Map<String, Field> map = new TreeMap<>();
-			for (Field field : fields) {
-				if (field.isAnnotationPresent(CsvColumn.class)) {
-					CsvColumn csvColumn = field.getAnnotation(CsvColumn.class);
-					String orderKey = csvColumn.orderKey();
-					if (orderKey.equals("fieldName")) {
-						orderKey = field.getName();
-					}
-					field.setAccessible(true);
-					if (map.containsKey(orderKey)) {
-						throw new RuntimeException("not support duplicated orderKey");
-					}
-					map.put(orderKey, field);
-				}
-			}
+			Map<String, Field> map = pickOrderKey2Field(fields);
 			List<String[]> lines = csvReader.readAll();
 			if (excludeHeader && !lines.isEmpty()) {
 				lines.remove(0);
@@ -145,6 +117,25 @@ public class BeanCsv {
 			log.warn("", e);
 		}
 		return list;
+	}
+
+	private static Map<String, Field> pickOrderKey2Field(List<Field> fields) {
+		Map<String, Field> map = new TreeMap<>();
+		for (Field field : fields) {
+			if (field.isAnnotationPresent(CsvColumn.class)) {
+				CsvColumn csvColumn = field.getAnnotation(CsvColumn.class);
+				String orderKey = csvColumn.orderKey();
+				if (orderKey.equals("fieldName")) {
+					orderKey = field.getName();
+				}
+				field.setAccessible(true);
+				if (map.containsKey(orderKey)) {
+					throw new RuntimeException("not support duplicated orderKey");
+				}
+				map.put(orderKey, field);
+			}
+		}
+		return map;
 	}
 
 	private static List<Field> pickFields(Class<?> clazz) {
