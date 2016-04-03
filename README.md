@@ -15,4 +15,4 @@ We accept PRs via github. There are some guidelines which will make applying PRs
 1. Provide JUnit tests for your changes and make sure your changes don't break any existing tests by running `mvn clean test`.
 
 ## License
-Code is under the Apache Licence v2.
+Code is under the [Apache Licence v2](https://www.apache.org/licenses/LICENSE-2.0.txt).
