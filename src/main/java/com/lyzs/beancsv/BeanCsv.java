@@ -117,7 +117,7 @@ public class BeanCsv {
                             SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
                             value = simpleDateFormat.format((Date) object);
                         } else {
-                            value = String.valueOf(field.get(bean));
+                            value = String.valueOf(object);
                         }
                     }
                     tmp.add(value);
