@@ -158,8 +158,10 @@ public class BeanCsv {
                     index++;
                     try {
                         if (field.getType() == Date.class) {
-                            Date date = csvColumnInfo.getDateFormat().parse(value);
-                            BeanUtils.setProperty(t, field.getName(), date);
+                            if (value.length() > 0) {
+                                Date date = csvColumnInfo.getDateFormat().parse(value);
+                                BeanUtils.setProperty(t, field.getName(), date);
+                            }
                         } else {
                             BeanUtils.setProperty(t, field.getName(), value);
                         }
