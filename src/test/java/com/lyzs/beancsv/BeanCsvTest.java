@@ -137,6 +137,7 @@ public class BeanCsvTest {
 
     @Test
     public void testParseBeans() throws IOException {
+        testWriteCSVWriterObject();
         CSVReader csvReader = new CSVReader(new FileReader("beancsv.csv"));
         List<Worker> workers = BeanCsv.parseBeans(csvReader, Worker.class, true);
         assertFalse(workers.isEmpty());
