@@ -3,12 +3,12 @@ package com.lyzs.beancsv;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -100,22 +100,20 @@ public class BeanCsv {
         }
         Class<?> clazz = beans.get(0).getClass();
         List<Field> fields = pickFields(clazz);
-        Map<String, Field> orderKey2Field = pickOrderKey2Field(fields);
-        Map<String, String> orderKey2Format = pickOrderKey2Format(fields);
+        Map<String, CsvColumnInfo> orderKey2CsvColumnInfo = pickOrderKey2CsvColumnInfo(fields);
 
         List<String[]> list = new ArrayList<>();
         for (Object bean : beans) {
             List<String> tmp = new ArrayList<>();
-            for (Entry<String, Field> entry : orderKey2Field.entrySet()) {
-                Field field = entry.getValue();
+            for (Entry<String, CsvColumnInfo> entry : orderKey2CsvColumnInfo.entrySet()) {
+                CsvColumnInfo csvColumnInfo = entry.getValue();
+                Field field = csvColumnInfo.getField();
                 try {
                     Object object = field.get(bean);
                     String value = "";
                     if (object != null) {
                         if (field.getType() == Date.class) {
-                            String format = orderKey2Format.get(entry.getKey());
-                            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
-                            value = simpleDateFormat.format((Date) object);
+                            value = csvColumnInfo.getDateFormat().format((Date) object);
                         } else {
                             value = String.valueOf(object);
                         }
@@ -145,8 +143,7 @@ public class BeanCsv {
         List<T> list = new ArrayList<>();
         try {
             List<Field> fields = pickFields(clazz);
-            Map<String, Field> orderKey2Field = pickOrderKey2Field(fields);
-            Map<String, String> orderKey2Format = pickOrderKey2Format(fields);
+            Map<String, CsvColumnInfo> orderKey2CsvColumnInfo = pickOrderKey2CsvColumnInfo(fields);
             List<String[]> lines = csvReader.readAll();
             if (excludeHeader && !lines.isEmpty()) {
                 lines.remove(0);
@@ -154,15 +151,14 @@ public class BeanCsv {
             for (String[] line : lines) {
                 T t = clazz.newInstance();
                 int index = 0;
-                for (Entry<String, Field> entry : orderKey2Field.entrySet()) {
-                    Field field = entry.getValue();
+                for (Entry<String, CsvColumnInfo> entry : orderKey2CsvColumnInfo.entrySet()) {
+                    CsvColumnInfo csvColumnInfo = entry.getValue();
+                    Field field = csvColumnInfo.getField();
                     String value = line[index];
                     index++;
                     try {
                         if (field.getType() == Date.class) {
-                            String format = orderKey2Format.get(entry.getKey());
-                            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
-                            Date date = simpleDateFormat.parse(value);
+                            Date date = csvColumnInfo.getDateFormat().parse(value);
                             BeanUtils.setProperty(t, field.getName(), date);
                         } else {
                             BeanUtils.setProperty(t, field.getName(), value);
@@ -179,39 +175,39 @@ public class BeanCsv {
         return list;
     }
 
-    private static Map<String, Field> pickOrderKey2Field(List<Field> fields) {
-        Map<String, Field> map = new TreeMap<>();
+    private static Map<String, CsvColumnInfo> pickOrderKey2CsvColumnInfo(List<Field> fields) {
+        Map<String, CsvColumnInfo> map = new TreeMap<>();
         for (Field field : fields) {
             if (field.isAnnotationPresent(CsvColumn.class)) {
                 CsvColumn csvColumn = field.getAnnotation(CsvColumn.class);
-                String orderKey = csvColumn.orderKey();
-                if (orderKey.equals("fieldName")) {
-                    orderKey = field.getName();
+                CsvColumnInfo csvColumnInfo = new CsvColumnInfo();
+                String name = csvColumn.name();
+                if (name.equals("fieldName")) {
+                    name = field.getName();
                 }
-                field.setAccessible(true);
-                if (map.containsKey(orderKey)) {
-                    throw new RuntimeException("not support duplicated orderKey");
-                }
-                map.put(orderKey, field);
-            }
-        }
-        return map;
-    }
+                csvColumnInfo.setName(name);
 
-    private static Map<String, String> pickOrderKey2Format(List<Field> fields) {
-        Map<String, String> map = new HashMap<>();
-        for (Field field : fields) {
-            if (field.isAnnotationPresent(CsvColumn.class)) {
-                CsvColumn csvColumn = field.getAnnotation(CsvColumn.class);
                 String orderKey = csvColumn.orderKey();
                 if (orderKey.equals("fieldName")) {
                     orderKey = field.getName();
                 }
+                csvColumnInfo.setOrderKey(orderKey);
+
                 String format = csvColumn.format();
+                csvColumnInfo.setFormat(format);
+
+                field.setAccessible(true);
+                csvColumnInfo.setField(field);
+
+                if (field.getType() == Date.class) {
+                    DateFormat dateFormat = new SimpleDateFormat(format);
+                    csvColumnInfo.setDateFormat(dateFormat);
+                }
+
                 if (map.containsKey(orderKey)) {
                     throw new RuntimeException("not support duplicated orderKey");
                 }
-                map.put(orderKey, format);
+                map.put(orderKey, csvColumnInfo);
             }
         }
         return map;
