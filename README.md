@@ -9,20 +9,41 @@ Read bean objects from a csv file or write bean objects to a csv file.
 ## Usage
 
 Please refer to the following examples.
+
+1. How to use `@CsvColumn`?
 <pre>
-  @CsvColumn(name="id", orderKey="A")
-  private String id;
+  public class Worker {
+    @CsvColumn(name="id", orderKey="A")
+    private String id;
 
-  @CsvColumn(name="firstName", orderKey="B")
-  private String firstName;
+    @CsvColumn(name="firstName", orderKey="B")
+    private String firstName;
 
-  @CsvColumn(name="lastName", orderKey="C")
-  private String lastName;
+    @CsvColumn(name="lastName", orderKey="C")
+    private String lastName;
 
-  @CsvColumn(name="birthday", orderKey="D", format="yyyyMMdd")
-  private Date birthday;
+    @CsvColumn(name="birthday", orderKey="D", format="yyyyMMdd")
+    private Date birthday;
+
+    // setters and getters
+  }
 </pre>
-
+1. How to read bean objects?
+<pre>
+  CSVReader csvReader = new CSVReader(new FileReader("beancsv.csv"));
+  List<Worker> workers = BeanCsv.parseBeans(csvReader, Worker.class, true);
+  csvReader.close();
+</pre>
+1. How to write bean objects?
+<pre>
+  CSVWriter csvWriter = new CSVWriter(new FileWriter(new File("beancsv.csv")));
+  BeanCsv.writeHeader(csvWriter, Worker.class);
+  List<Worker> workers = new ArrayList<>();
+  workers.add(new Worker());
+  workers.add(new Worker());
+  BeanCsv.write(csvWriter, workers);
+  csvWriter.close();
+</pre>
 
 ## Contributing
 We accept PRs via github. There are some guidelines which will make applying PRs easier for us:
