@@ -6,6 +6,24 @@ Read bean objects from a csv file or write bean objects to a csv file.
 1. Write bean objects to a csv file.
 1. `@CsvColumn` indicates the column names, column order and column format.
 
+## Usage
+
+Please refer to the following examples.
+<pre>
+  @CsvColumn(name="id", orderKey="A")
+  private String id;
+
+  @CsvColumn(name="firstName", orderKey="B")
+  private String firstName;
+
+  @CsvColumn(name="lastName", orderKey="C")
+  private String lastName;
+
+  @CsvColumn(name="birthday", orderKey="D", format="yyyyMMdd")
+  private Date birthday;
+</pre>
+
+
 ## Contributing
 We accept PRs via github. There are some guidelines which will make applying PRs easier for us:
 
