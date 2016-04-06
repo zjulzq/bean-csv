@@ -156,4 +156,22 @@ public class BeanCsvTest {
         }
         file.delete();
     }
+
+    @Test
+    public void testParseBeansWithMissingColumns() throws IOException {
+        File file = new File("beancsv.csv");
+        try (CSVWriter csvWriter = new CSVWriter(new FileWriter(file))) {
+            BeanCsv.writeHeader(csvWriter, Worker.class);
+            Worker worker1 = new Worker();
+            worker1.setBirthday(new Date());
+            BeanCsv.write(csvWriter, worker1);
+            String[] worker2 = { "worker2", "", "zhi qiang", "li" };
+            csvWriter.writeNext(worker2);
+        }
+        try (CSVReader csvReader = new CSVReader(new FileReader(file))) {
+            List<Worker> workers = BeanCsv.parseBeans(csvReader, Worker.class, true);
+            assertFalse(workers.isEmpty());
+        }
+        file.delete();
+    }
 }
