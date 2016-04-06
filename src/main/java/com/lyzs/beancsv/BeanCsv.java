@@ -130,7 +130,9 @@ public class BeanCsv {
     }
 
     /**
-     * Parse bean objects from csvReader, according to clazz.
+     * Parse bean objects from csvReader, according to clazz. Empty lines will
+     * be skipped. For a line which is not empty but miss some columns, the
+     * available columns will be used to create a bean object.
      * 
      * @param csvReader
      * @param clazz
