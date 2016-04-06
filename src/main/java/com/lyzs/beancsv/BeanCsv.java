@@ -149,29 +149,31 @@ public class BeanCsv {
                 lines.remove(0);
             }
             for (String[] line : lines) {
-                T t = clazz.newInstance();
-                int index = 0;
-                for (Entry<String, CsvColumnInfo> entry : orderKey2CsvColumnInfo.entrySet()) {
-                    if (line.length > index) {
-                        CsvColumnInfo csvColumnInfo = entry.getValue();
-                        Field field = csvColumnInfo.getField();
-                        String value = line[index];
-                        index++;
-                        try {
-                            if (field.getType() == Date.class) {
-                                if (value.length() > 0) {
-                                    Date date = csvColumnInfo.getDateFormat().parse(value);
-                                    BeanUtils.setProperty(t, field.getName(), date);
+                if ((line.length == 1 && line[0].length() > 0) || line.length > 1) {
+                    T t = clazz.newInstance();
+                    int index = 0;
+                    for (Entry<String, CsvColumnInfo> entry : orderKey2CsvColumnInfo.entrySet()) {
+                        if (line.length > index) {
+                            CsvColumnInfo csvColumnInfo = entry.getValue();
+                            Field field = csvColumnInfo.getField();
+                            String value = line[index];
+                            index++;
+                            try {
+                                if (field.getType() == Date.class) {
+                                    if (value.length() > 0) {
+                                        Date date = csvColumnInfo.getDateFormat().parse(value);
+                                        BeanUtils.setProperty(t, field.getName(), date);
+                                    }
+                                } else {
+                                    BeanUtils.setProperty(t, field.getName(), value);
                                 }
-                            } else {
-                                BeanUtils.setProperty(t, field.getName(), value);
+                            } catch (InvocationTargetException | ParseException e) {
+                                log.warn("", e);
                             }
-                        } catch (InvocationTargetException | ParseException e) {
-                            log.warn("", e);
                         }
                     }
+                    list.add(t);
                 }
-                list.add(t);
             }
         } catch (IOException | InstantiationException | IllegalAccessException e) {
             log.warn("", e);

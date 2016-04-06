@@ -1,6 +1,6 @@
 package com.lyzs.beancsv;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileReader;
@@ -152,7 +152,7 @@ public class BeanCsvTest {
         }
         try (CSVReader csvReader = new CSVReader(new FileReader(file))) {
             List<Worker> workers = BeanCsv.parseBeans(csvReader, Worker.class, true);
-            assertFalse(workers.isEmpty());
+            assertEquals(2, workers.size());
         }
         file.delete();
     }
@@ -170,8 +170,28 @@ public class BeanCsvTest {
         }
         try (CSVReader csvReader = new CSVReader(new FileReader(file))) {
             List<Worker> workers = BeanCsv.parseBeans(csvReader, Worker.class, true);
-            assertFalse(workers.isEmpty());
+            assertEquals(2, workers.size());
         }
         file.delete();
     }
+
+    @Test
+    public void testParseBeansWithEmptyLines() throws IOException {
+        File file = new File("beancsv.csv");
+        try (CSVWriter csvWriter = new CSVWriter(new FileWriter(file))) {
+            BeanCsv.writeHeader(csvWriter, Worker.class);
+            Worker worker1 = new Worker();
+            worker1.setBirthday(new Date());
+            BeanCsv.write(csvWriter, worker1);
+            csvWriter.writeNext(new String[0]);
+            csvWriter.writeNext(new String[0]);
+            BeanCsv.write(csvWriter, new Worker());
+        }
+        try (CSVReader csvReader = new CSVReader(new FileReader(file))) {
+            List<Worker> workers = BeanCsv.parseBeans(csvReader, Worker.class, true);
+            assertEquals(2, workers.size());
+        }
+        file.delete();
+    }
+
 }
