@@ -111,36 +111,49 @@ public class BeanCsvTest {
 
     @Test
     public void testWriteCSVWriterObject() throws IOException {
-        CSVWriter csvWriter = new CSVWriter(new FileWriter(new File("beancsv.csv")));
-        BeanCsv.writeHeader(csvWriter, Worker.class);
-        Worker worker1 = new Worker();
-        worker1.setBirthday(new Date());
-        Worker worker2 = new Worker();
-        BeanCsv.write(csvWriter, worker1);
-        BeanCsv.write(csvWriter, worker2);
-        csvWriter.close();
+        File file = new File("beancsv.csv");
+        try (CSVWriter csvWriter = new CSVWriter(new FileWriter(file))) {
+            BeanCsv.writeHeader(csvWriter, Worker.class);
+            Worker worker1 = new Worker();
+            worker1.setBirthday(new Date());
+            Worker worker2 = new Worker();
+            BeanCsv.write(csvWriter, worker1);
+            BeanCsv.write(csvWriter, worker2);
+        }
+        file.delete();
     }
 
     @Test
     public void testWriteCSVWriterListOfObject() throws IOException {
-        CSVWriter csvWriter = new CSVWriter(new FileWriter(new File("beancsv.csv")));
-        BeanCsv.writeHeader(csvWriter, Worker.class);
-        List<Worker> workers = new ArrayList<>();
-        Worker worker1 = new Worker();
-        worker1.setBirthday(new Date());
-        Worker worker2 = new Worker();
-        workers.add(worker1);
-        workers.add(worker2);
-        BeanCsv.write(csvWriter, workers);
-        csvWriter.close();
+        File file = new File("beancsv.csv");
+        try (CSVWriter csvWriter = new CSVWriter(new FileWriter(file))) {
+            BeanCsv.writeHeader(csvWriter, Worker.class);
+            List<Worker> workers = new ArrayList<>();
+            Worker worker1 = new Worker();
+            worker1.setBirthday(new Date());
+            Worker worker2 = new Worker();
+            workers.add(worker1);
+            workers.add(worker2);
+            BeanCsv.write(csvWriter, workers);
+        }
+        file.delete();
     }
 
     @Test
     public void testParseBeans() throws IOException {
-        testWriteCSVWriterObject();
-        CSVReader csvReader = new CSVReader(new FileReader("beancsv.csv"));
-        List<Worker> workers = BeanCsv.parseBeans(csvReader, Worker.class, true);
-        assertFalse(workers.isEmpty());
-        csvReader.close();
+        File file = new File("beancsv.csv");
+        try (CSVWriter csvWriter = new CSVWriter(new FileWriter(file))) {
+            BeanCsv.writeHeader(csvWriter, Worker.class);
+            Worker worker1 = new Worker();
+            worker1.setBirthday(new Date());
+            Worker worker2 = new Worker();
+            BeanCsv.write(csvWriter, worker1);
+            BeanCsv.write(csvWriter, worker2);
+        }
+        try (CSVReader csvReader = new CSVReader(new FileReader(file))) {
+            List<Worker> workers = BeanCsv.parseBeans(csvReader, Worker.class, true);
+            assertFalse(workers.isEmpty());
+        }
+        file.delete();
     }
 }
