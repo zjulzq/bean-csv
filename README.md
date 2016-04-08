@@ -45,6 +45,15 @@ Please refer to the following examples.
   csvWriter.close();
 </pre>
 
+## Include it
+```
+<dependency>
+  <groupId>com.github.zjulzq</groupId>
+  <artifactId>bean-csv</artifactId>
+  <version>0.0.3</version>
+</dependency>
+```
+
 ## Contributing
 We accept PRs via github. There are some guidelines which will make applying PRs easier for us:
 
